@@ -2,6 +2,9 @@ import datetime
 from _decimal import Decimal
 from typing import Optional
 
+import os
+
+import uvicorn
 from fastapi import FastAPI, HTTPException
 from tortoise.contrib.fastapi import register_tortoise
 import loguru
@@ -20,7 +23,7 @@ log.add("file.log", format="{time} {level} {message}", level="INFO", rotation="1
 @app.get("/calculate_cost")
 async def calculate_cost(cargo_type: str, cost: str, date: Optional[str] = None):
     try:
-        return {"cost": await calculator.calculate_insurance_cost(cost, cargo_type, date=date)}
+        return {"cost": await calculator.calculate_insurance_cost(cost, cargo_type, delivery_date=date)}
     except RateDoNotEstablished as e:
         raise HTTPException(status_code=404, detail=e.message)
 
@@ -53,8 +56,11 @@ async def get_rates(day: datetime.date = None):
 
 register_tortoise(
     app,
-    db_url='sqlite://db.sqlite3',
+    db_url=f"postgres://{os.getenv('DB_USER')}:{os.getenv('DB_PASS')}@{os.getenv('DB_HOST')}:{os.getenv('DB_PORT')}/{os.getenv('DB_NAME')}",
     modules={'models': ['database.models']},
     generate_schemas=True,
     add_exception_handlers=True,
 )
+
+if __name__ == '__main__':
+    uvicorn.run(app, host='0.0.0.0', port=8001)
