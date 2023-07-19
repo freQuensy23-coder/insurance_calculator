@@ -43,6 +43,14 @@ async def set_rates(rates: list[Rate_pydantic]):
     return {'status': 'ok', 'warnings': warnings}
 
 
+@app.get("/rates")
+async def get_rates(day: datetime.date = None):
+    log.info(f"Getting rates for {day}")
+    day = day or datetime.date.today()
+    rates = await Rate.filter(date=day).all()
+    return {"status": "ok", "result": rates}
+
+
 register_tortoise(
     app,
     db_url='sqlite://db.sqlite3',
