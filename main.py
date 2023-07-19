@@ -23,7 +23,7 @@ log.add("file.log", format="{time} {level} {message}", level="INFO", rotation="1
 @app.get("/calculate_cost")
 async def calculate_cost(cargo_type: str, cost: str, date: Optional[str] = None):
     try:
-        return {"cost": await calculator.calculate_insurance_cost(cost, cargo_type, delivery_date=date)}
+        return {"status": "ok", "cost": await calculator.calculate_insurance_cost(cost, cargo_type, delivery_date=date)}
     except RateDoNotEstablished as e:
         raise HTTPException(status_code=404, detail=e.message)
 
